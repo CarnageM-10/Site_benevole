@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/css/sidebar_user.css">
+        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css'
+            rel='stylesheet'>
+        <link rel="stylesheet" href="/css/style.css">
+        <title>Tableau de Bord</title>
+        <link rel="icon" href="/image/together.jpeg" type="image/x-icon">
+    </head>
+    <body>
+        <nav class="sidebar">
+            <header>
+                <div class="image-text">
+                    
+                    <span class="image">
+                        <input type="file" id="file-input" accept="image/*" style="display: none;">
+                        <label for="file-input"><img src="/image/{{userImage}}" alt="Profile Image" id="profile-image"> </label>
+                    </span>
+                    <div class="text header-tex">
+                        <span class="name">
+                            <span class="statut" id="user-name">User </span>
+                        </span>
+                    </div>
+                </div>
+                
+            </header>
+
+            <div class="menu-bar">
+                <div class="menu">
+                    <ul class="menu-links">
+                        <li class="nav-link">
+                            <a href="/dashboard_user.html">
+                                <i class='bx bx-home-heart icon'></i>
+                                <span class="text nav-text">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/mission_benevole.html">
+                                <i class='bx bx-heart icon'></i>
+                                <span class="text nav-text">Mission Bénévole</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/detail_recompense.html">
+                                <i class='bx bx-trophy icon'></i>
+                                <span class="text nav-text">Récompense</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/historique_recompenses.html">
+                                <i class='bx bx-history icon'></i>
+                                <span class="text nav-text">Historique récompense</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/calendrier_user.html">
+                                <i class='bx bx-calendar icon'></i>
+                                <span class="text nav-text">Calendrier</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bottom-content">
+                    <li class>
+                        <a href="/login2.html">
+                            <i class='bx bx-log-out icon'></i>
+                            <span class="text nav-text">Logout</span>
+                        </a>
+                    </li>
+
+                    <li class="mode">
+                        <div class="moon-sun">
+                            <i class='bx bx-moon icon moon'></i>
+                            <i class='bx bx-sun icon sun'></i>
+                        </div>
+                        <span class="mode-text text">Dark_Mode</span>
+
+                        <div class="toggle-switch">
+                            <span class="switch"></span>
+                        </div>
+                    </li>
+                </div>
+            </div>
+        </nav>
+
+        <div class="home">
+            <div class="text">Missions de bénévolat</div>
+
+            <form id="mission-form" action="/mission_benevole" method="post">
+                <label for="mission_id">Sélectionnez une mission :</label>
+                <select name="mission_id" id="mission_id">
+                    <option value selected>Selectionner une mission</option>
+                    {{missionOptions}}
+                </select>
+
+                <div>
+                    <button type="button" id="toggle-timer">Lancer</button>
+                    <span id="timer-display">Temps écoulé : 00:00:00</span>
+                    <input type="hidden" name="heure" id="heure" required> 
+                </div>
+                
+                <div id="final-time-display" style="display: none;">Temps final : <span id="final-time">00:00:00</span></div>
+
+                <label for="benevole_id">Bénévole :</label>
+                <select name="benevole_id" id="benevole_id">
+                    <option value selected>Selectionner un bénévole</option>
+                    {{benevoleOptions}}
+                </select>
+
+                <button type="submit">Ajouter Mission Bénévole</button>
+            </form>
+            <div id="message">
+                <script>
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const successMessage = urlParams.get('message');
+            
+                    
+                    const storedMessage = localStorage.getItem('successMessage');
+            
+                    if (successMessage) {
+                        localStorage.setItem('successMessage', successMessage);
+                    }
+            
+                    const messageToShow = storedMessage || successMessage;
+            
+                    if (messageToShow) {
+                        const messageElement = document.createElement('p');
+                        messageElement.textContent = messageToShow;
+            
+                        const closeButton = document.createElement('span');
+                        closeButton.textContent = '✖';
+                        closeButton.style.cursor = 'pointer';
+                        closeButton.style.marginLeft = '10px';
+                        closeButton.style.color = 'red';
+            
+                        closeButton.onclick = function() {
+                            document.getElementById('message').style.display = 'none';
+                            localStorage.removeItem('successMessage'); 
+                        };
+            
+                        messageElement.appendChild(closeButton);
+                        document.getElementById('message').appendChild(messageElement);
+                    }
+                </script>
+            </div>
+
+            <a href="/liste_mission.html">Liste des Missions Bénévoles</a>
+        </div>
+
+        <script>
+            let timerInterval;
+            let elapsedTime = 0; // Temps écoulé en secondes
+
+            document.getElementById('toggle-timer').addEventListener('click', function() {
+                const button = this;
+
+                if (button.textContent === 'Lancer') {
+                    // Démarrer le compteur
+                    button.textContent = 'Terminer';
+                    timerInterval = setInterval(() => {
+                        elapsedTime++;
+                        document.getElementById('timer-display').textContent = formatTime(elapsedTime);
+                    }, 1000);
+                } else {
+        // Arrêter le compteur
+                button.textContent = 'Lancer';
+                clearInterval(timerInterval);
+
+                // Mettre à jour le champ d'heures avec le temps écoulé
+                document.getElementById('heure').value =formatTime(elapsedTime); // Mettre à jour le champ caché avec le temps écoulé
+
+                // Afficher le temps final
+                document.getElementById('final-time').textContent = formatTime(elapsedTime); // Mettre à jour l'affichage du temps final
+                document.getElementById('final-time-display').style.display = 'block'; // Afficher l'élément contenant le temps final
+
+                // Réinitialiser le temps écoulé
+                elapsedTime = 0; 
+                document.getElementById('timer-display').textContent = ''; // Réinitialiser l'affichage
+            }
+        });
+
+        // Fonction pour formater le temps en HH:MM:SS
+        // Fonction pour formater le temps en HH:MM:SS
+        function formatTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600); // Total des heures
+            const minutes = Math.floor((totalSeconds % 3600) / 60); // Total des minutes
+            const seconds = totalSeconds % 60; // Total des secondes
+
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+        </script>
+
+        <script>
+            document.getElementById('file-input').addEventListener('change', function() {
+                const formData = new FormData();
+                const fileInput = document.getElementById('file-input');
+                
+                if (fileInput.files.length > 0) {
+                    formData.append('image', fileInput.files[0]);
+        
+                    fetch('/updateProfileImage', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.reload(); // Recharger la page pour afficher la nouvelle image
+                        } else {
+                            alert('Erreur lors de la mise à jour de l\'image.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+                }
+            });
+        </script>
+
+        <script>
+            fetch('/api/getUserName') 
+        .then(response => response.json())
+        .then(data => {
+            if (data.name) {
+                document.getElementById('user-name').textContent = data.name; // Update the displayed name
+            }
+        })
+        .catch(error => console.error('Error fetching admin name:', error));
+        </script>
+
+        <script>
+            document.getElementById('mission-form').addEventListener('submit', function(event) {
+                
+                location.reload();
+            });
+        </script>
+
+        <script src="/js/script.js"></script>
+    </body>
+</html>

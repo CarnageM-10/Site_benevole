@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/css/sidebar.css">
+        <link rel="stylesheet" href="/css/style.css">
+        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css'
+            rel='stylesheet'>
+        <link rel="icon" href="/image/together.jpeg" type="image/x-icon">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Modifier Mission</title>
+    </head>
+    <body>
+        <nav class="sidebar">
+            <header>
+                <div class="image-text">
+
+                    <span class="image">
+                        <input type="file" id="file-input" accept="image/*"
+                            style="display: none;">
+                        <label for="file-input">
+                            <img id="profile-image" src="/image/{{userImage}}"
+                                alt="Profile Image">
+                        </label>
+                    </span>
+
+                    <div class="text header-tex">
+                        <span class="name">
+                            <span class="statut" id="user-name">Admin </span>
+                        </span>
+                    </div>
+                </div>
+
+            </header>
+
+            <div class="menu-bar">
+                <div class="menu">
+                    <ul class="menu-links">
+                        <li class="nav-link">
+                            <a href="/dashboard.html">
+                                <i class='bx bx-home-heart icon'></i>
+                                <span class="text nav-text">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/mission.html">
+                                <i class='bx bx-task icon'></i>
+                                <span class="text nav-text">Mission</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/heures.html">
+                                <i class='bx bx-user icon'></i>
+                                <span class="text nav-text">Bénévole</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/calendrier.html">
+                                <i class='bx bx-calendar icon'></i>
+                                <span class="text nav-text">Calendrier</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bottom-content">
+                    <li class>
+                        <a href="/login1.html">
+                            <i class='bx bx-log-out icon'></i>
+                            <span class="text nav-text">Logout</span>
+                        </a>
+                    </li>
+
+                    <li class="mode">
+                        <div class="moon-sun">
+                            <i class='bx bx-moon icon moon'></i>
+                            <i class='bx bx-sun icon sun'></i>
+                        </div>
+                        <span class="mode-text text">Dark_Mode</span>
+
+                        <div class="toggle-switch">
+                            <span class="switch"></span>
+                        </div>
+                    </li>
+                </div>
+            </div>
+        </nav>
+
+        <div class="home">
+            <div class="text1">
+                <a href="/mes_missions.html" class="back">
+                    <i class='bx bx-left-arrow-circle'></i>
+                </a>
+                <span>Retour</span>
+            </div>
+            <div class="text">Modifier Mission</div>
+            <form id="edit-mission-form" method="post">
+                <input type="hidden" name="id" id="mission-id">
+                <input type="hidden" name="administrateur_id" id="admin-id">
+                <!-- Champ caché pour l'ID de l'administrateur -->
+                <input type="text" name="titre" placeholder="Titre" required>
+                <textarea name="description" placeholder="Description"
+                    required></textarea>
+                <input type="date" name="dateDeb" required>
+                <input type="date" name="dateFin" required>
+                <button type="submit">Modifier la mission</button>
+            </form>
+        </div>
+
+        <script>
+            document.getElementById('file-input').addEventListener('change', function() {
+                const formData = new FormData();
+                const fileInput = document.getElementById('file-input');
+                
+                if (fileInput.files.length > 0) {
+                    formData.append('image', fileInput.files[0]);
+        
+                    fetch('/updateAdminProfileImage', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.reload(); 
+                        } else {
+                            alert('Erreur lors de la mise à jour de l\'image.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+                }
+            });
+        </script>
+
+        <script>
+            fetch('/api/getAdminName') 
+        .then(response => response.json())
+        .then(data => {
+            if (data.name) {
+                document.getElementById('user-name').textContent = data.name; // Update the displayed name
+            }
+        })
+        .catch(error => console.error('Error fetching admin name:', error));
+        </script>
+
+        <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const missionId = urlParams.get('id');
+
+
+
+        // Récupérer les détails de la mission à modifier
+        fetch(`/mes_missions/${missionId}`)
+            .then(response => {
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération de la mission');
+                }
+                return response.json();
+            })
+            .then(mission => {
+                document.querySelector('input[name="titre"]').value = mission.titre;
+                document.querySelector('textarea[name="description"]').value = mission.description;
+                document.querySelector('input[name="dateDeb"]').value = mission.date_debut;
+                document.querySelector('input[name="dateFin"]').value = mission.date_fin;
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la récupération des détails de la mission.');
+            });
+
+            document.getElementById('edit-mission-form').addEventListener('submit', function(event) {
+    event.preventDefault(); // Empêche le rechargement de la page         
+
+    const formData = new FormData(this);
+
+    fetch(`/edit_mission/${missionId}`, {
+        method: 'PUT',
+        headers:{
+            'Content-Type' : 'application/json'
+        },
+        body: JSON.stringify({
+            titre : document.querySelector('input[name="titre"]').value, 
+                description : document.querySelector('textarea[name="description"]').value, 
+                dateDeb : document.querySelector('input[name="dateDeb"]').value, 
+                dateFin : document.querySelector('input[name="dateFin"]').value, 
+        })
+    })
+
+    .then(response => {
+        console.log(response);
+        if (!response.ok) {
+            throw new Error('Erreur lors de la mise à jour de la mission');
+        }
+        alert('Mission mise à jour avec succès !');
+        window.location.href = '/mes_missions.html'; // Rediriger vers la page des missions
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de la mise à jour de la mission.');
+    });
+});
+      
+    </script>
+    </body>
+</html>

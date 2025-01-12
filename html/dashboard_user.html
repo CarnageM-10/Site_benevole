@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/css/sidebar_user.css">
+        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css'
+            rel='stylesheet'>
+        <link rel="icon" href="/image/together.jpeg" type="image/x-icon"> 
+        <title>Tableau de Bord</title>
+        
+    </head>
+    <body>
+        <nav class="sidebar">
+            <header>
+                <div class="image-text">
+                    
+                    <span class="image">
+                        <input type="file" id="file-input" accept="image/*" style="display: none;">
+                        <label for="file-input"><img src="/image/{{userImage}}" alt="Profile Image" id="profile-image"> </label>
+                    </span>
+                    <div class="text header-tex">
+                        <span class="name">
+                            <span class="statut" id="user-name">User </span>
+                        </span>
+                    </div>
+                </div>
+                
+            </header>
+
+            <div class="menu-bar">
+                <div class="menu">
+                    <ul class="menu-links">
+                        <li class="nav-link">
+                            <a href="/dashboard_user.html">
+                                <i class='bx bx-home-heart icon'></i>
+                                <span class="text nav-text">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/mission_benevole.html">
+                                <i class='bx bx-heart icon'></i>
+                                <span class="text nav-text">Mission Bénévole</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/detail_recompense.html">
+                                <i class='bx bx-trophy icon'></i>
+                                <span class="text nav-text">Récompense</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/historique_recompenses.html">
+                                <i class='bx bx-history icon'></i>
+                                <span class="text nav-text">Historique récompense</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/calendrier_user.html">
+                                <i class='bx bx-calendar icon'></i>
+                                <span class="text nav-text">Calendrier</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bottom-content">
+                    <li class>
+                        <a href="/login2.html">
+                            <i class='bx bx-log-out icon'></i>
+                            <span class="text nav-text">Logout</span>
+                        </a>
+                    </li>
+
+                    <li class="mode">
+                        <div class="moon-sun">
+                            <i class='bx bx-moon icon moon'></i>
+                            <i class='bx bx-sun icon sun'></i>
+                        </div>
+                        <span class="mode-text text">Dark_Mode</span>
+
+                        <div class="toggle-switch">
+                            <span class="switch"></span>
+                        </div>
+                    </li>
+                </div>
+            </div>
+        </nav>
+
+        <div class="home">
+            <div class="text">Dashboard</div>
+            <div class="dashboard-container">   
+                <div id="mission" class="statistic-card">
+                    <p class="statistic-hours">Nombre total d'heure de bénévolat : <span id="total-hours">0</span></p>
+                </div>
+                <div id="total-missions-béné" class="statistic-card">
+                    <p class="statistic-hours">Nombre total de missions de bénévolat: <span id="total-mission-count">0</span></p>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('file-input').addEventListener('change', function() {
+                const formData = new FormData();
+                const fileInput = document.getElementById('file-input');
+                
+                if (fileInput.files.length > 0) {
+                    formData.append('image', fileInput.files[0]);
+        
+                    fetch('/updateProfileImage', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.reload(); // Recharger la page pour afficher la nouvelle image
+                        } else {
+                            alert('Erreur lors de la mise à jour de l\'image.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+                }
+            });
+        </script>
+        
+        <script>
+            document.getElementById('file-input').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile-image').src = e.target.result; // Mettre à jour l'image de profil
+                };
+                reader.readAsDataURL(file);
+                }
+            });
+        </script>
+        <script>
+            fetch('/api/getUserName') 
+        .then(response => response.json())
+        .then(data => {
+            if (data.name) {
+                document.getElementById('user-name').textContent = data.name; // Update the displayed name
+            }
+        })
+        .catch(error => console.error('Error fetching admin name:', error));
+        </script>
+
+        <script>
+        fetch('/heure/recompenses/count')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération du nombre d\'heures');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('total-hours').textContent = data.total_hours; // Afficher le total des heures
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la récupération du nombre d\'heures.');
+            });
+
+            fetch('/missions/count')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la récupération du nombre de missions');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('total-mission-count').textContent = data.total_missions; // Mettre à jour le nombre total de missions
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Erreur lors de la récupération du nombre de missions.');
+                });
+    </script>
+
+        <script src="/js/script.js"></script>
+    </body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique</title>
+    <link rel="stylesheet" href="/css/sidebar_user.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="/image/together.jpeg" type="image/x-icon"> 
+</head>
+
+<body>
+    <nav class="sidebar">
+        <header>
+            <div class="image-text">
+                
+                <span class="image">
+                    <input type="file" id="file-input" accept="image/*" style="display: none;">
+                    <label for="file-input"><img src="/image/{{userImage}}" alt="Profile Image" id="profile-image"> </label>
+                </span>
+                <div class="text header-tex">
+                    <span class="name">
+                        <span class="statut" id="user-name">User </span>
+                    </span>
+                </div>
+            </div>
+            
+        </header>
+
+        <div class="menu-bar">
+            <div class="menu">
+                <ul class="menu-links">
+                    <li class="nav-link">
+                        <a href="/dashboard_user.html">
+                            <i class='bx bx-home-heart icon'></i>
+                            <span class="text nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="/mission_benevole.html">
+                            <i class='bx bx-heart icon'></i>
+                            <span class="text nav-text">Mission Bénévole</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="/detail_recompense.html">
+                            <i class='bx bx-trophy icon'></i>
+                            <span class="text nav-text">Récompense</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="/historique_recompenses.html">
+                            <i class='bx bx-history icon'></i>
+                            <span class="text nav-text">Historique récompense</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="/calendrier_user.html">
+                            <i class='bx bx-calendar icon'></i>
+                            <span class="text nav-text">Calendrier</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bottom-content">
+                <li class>
+                    <a href="/login2.html">
+                        <i class='bx bx-log-out icon'></i>
+                        <span class="text nav-text">Logout</span>
+                    </a>
+                </li>
+
+                <li class="mode">
+                    <div class="moon-sun">
+                        <i class='bx bx-moon icon moon'></i>
+                        <i class='bx bx-sun icon sun'></i>
+                    </div>
+                    <span class="mode-text text">Dark_Mode</span>
+
+                    <div class="toggle-switch">
+                        <span class="switch"></span>
+                    </div>
+                </li>
+            </div>
+        </div>
+    </nav>
+    <div class="home">
+        <table id="reward-history-table">
+            <thead>
+                <tr>
+                    <th>Nom de la Mission</th>
+                    <th>Récompense</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.getElementById('file-input').addEventListener('change', function() {
+            const formData = new FormData();
+            const fileInput = document.getElementById('file-input');
+            
+            if (fileInput.files.length > 0) {
+                formData.append('image', fileInput.files[0]);
+    
+                fetch('/updateProfileImage', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload(); // Recharger la page pour afficher la nouvelle image
+                    } else {
+                        alert('Erreur lors de la mise à jour de l\'image.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                });
+            }
+        });
+    </script>
+
+    <script>
+        fetch('/api/getUserName') 
+        .then(response => response.json())
+        .then(data => {
+            if (data.name) {
+                document.getElementById('user-name').textContent = data.name; // Mettre à jour le nom affiché
+            }
+        })
+        .catch(error => console.error('Error fetching user name:', error));
+    
+        fetch('/dashboard/recompenses')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération des récompenses');
+                }
+                return response.json();
+            })
+            .then(rewards => {
+                const tableBody = document.getElementById('reward-history-table').getElementsByTagName('tbody')[0];
+                rewards.forEach(entry => {
+                    const row = tableBody.insertRow();
+                    const missionCell = row.insertCell(0);
+                    const rewardCell = row.insertCell(1);
+                    missionCell.textContent = entry.mission_title; // Titre de la mission
+                    rewardCell.textContent = entry.recompense; // Récompense
+                });
+            })
+            .catch(error => console.error('Error fetching rewards:', error));
+    </script>
+</body>
+</html>

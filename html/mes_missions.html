@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/css/sidebar.css">
+        <link rel="stylesheet" href="/css/style.css">
+        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css'
+            rel='stylesheet'>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <link rel="icon" href="/image/together.jpeg" type="image/x-icon"> 
+    </head>
+    <body>
+        <nav class="sidebar">
+            <header>
+                <div class="image-text">
+                    
+                    <span class="image">
+                        <input type="file" id="file-input" accept="image/*" style="display: none;">
+                        <label for="file-input">
+                            <img id="profile-image" src="/image/{{userImage}}" alt="Profile Image">
+                        </label>
+                    </span>
+
+                    
+                    <div class="text header-tex">
+                        <span class="name">
+                            <span class="statut" id="user-name">Admin </span>
+                        </span>
+                    </div>
+                </div>
+                
+            </header>
+
+            <div class="menu-bar">
+                <div class="menu">
+                    <ul class="menu-links">
+                        <li class="nav-link">
+                            <a href="/dashboard.html">
+                                <i class='bx bx-home-heart icon'></i>
+                                <span class="text nav-text">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/mission.html">
+                                <i class='bx bx-task icon'></i>
+                                <span class="text nav-text">Mission</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/send_recompense.html">
+                                <i class='bx bx-trophy icon'></i>
+                                <span class="text nav-text">Récompense</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/liste_recompense.html">
+                                <i class='bx bx-history icon'></i>
+                                <span class="text nav-text">Historique récompense</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/calendrier.html">
+                                <i class='bx bx-calendar icon'></i>
+                                <span class="text nav-text">Calendrier</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bottom-content">
+                    <li class>
+                        <a href="/login1.html">
+                            <i class='bx bx-log-out icon'></i>
+                            <span class="text nav-text">Logout</span>
+                        </a>
+                    </li>
+
+                    <li class="mode">
+                        <div class="moon-sun">
+                            <i class='bx bx-moon icon moon'></i>
+                            <i class='bx bx-sun icon sun'></i>
+                        </div>
+                        <span class="mode-text text">Dark_Mode</span>
+
+                        <div class="toggle-switch">
+                            <span class="switch"></span>
+                        </div>
+                    </li>
+                </div>
+            </div>
+        </nav>
+        <div class="home">
+            <div class="text1">
+                <a href="/mission.html" class="back">
+                    <i class='bx bx-left-arrow-circle'></i>
+                </a>
+                <span>Retour</span>
+            </div>
+
+            <div class="text">Mission</div>
+            <div class="mes-missions-container">
+                <table id="mes-missions-table">
+                    <thead>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Description</th>
+                            <th>Date de Début</th>
+                            <th>Date de Fin</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mes-missions-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('file-input').addEventListener('change', function() {
+                const formData = new FormData();
+                const fileInput = document.getElementById('file-input');
+                
+                if (fileInput.files.length > 0) {
+                    formData.append('image', fileInput.files[0]);
+        
+                    fetch('/updateAdminProfileImage', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.reload(); 
+                        } else {
+                            alert('Erreur lors de la mise à jour de l\'image.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+                }
+            });
+        </script>
+
+        <script>
+            fetch('/api/getAdminName') 
+        .then(response => response.json())
+        .then(data => {
+            if (data.name) {
+                document.getElementById('user-name').textContent = data.name; // Update the displayed name
+            }
+        })
+        .catch(error => console.error('Error fetching admin name:', error));
+        </script>
+
+        <script>
+            function editMission(missionId) {
+                window.location.href = `/edit_mission.html?id=${missionId}`;
+            }
+
+            function deleteMission(missionId) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette mission ?')) {
+                    fetch(`/delete_mission/${missionId}`, {
+                        method: 'DELETE'
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur lors de la suppression de la mission');
+                        }
+                        // Rafraîchir la liste des missions après la suppression
+                        fetchMissions();
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+                }
+            }
+
+            function fetchMissions() {
+                fetch('/mes_missions')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur lors de la récupération des missions');
+                        }
+                        return response.json();
+                    })
+                    .then(missions => {
+                        const missionsList = document.getElementById('mes-missions-list');
+                        missionsList.innerHTML = ''; // Vider la liste avant d'ajouter les missions
+        
+                        if (missions.length === 0) {
+                            missionsList.innerHTML = '<tr><td colspan="5">Aucune mission trouvée.</td></tr>';
+                        } else {
+                            missions.forEach(mission => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${mission.titre}</td>
+                                    <td>${mission.description}</td>
+                                    <td>${mission.date_debut}</td>
+                                    <td>${mission.date_fin}</td>
+                                    <td>
+    <button class="btn-modifier" onclick="editMission(${mission.id})">Modifier</button>
+    <button class="btn-supprimer" onclick="deleteMission(${mission.id})">Supprimer</button>
+</td>
+                                `;
+                                missionsList.appendChild(row);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+            }
+        
+            document.addEventListener('DOMContentLoaded', fetchMissions);
+        </script>
+
+        <script src="/js/script.js"></script>
+    </body>
+</html>

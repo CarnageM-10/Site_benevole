@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Missions</title>
+    <link rel="stylesheet" href="/css/sidebar_user.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="/image/together.jpeg" type="image/x-icon"> 
+</head>
+<body>
+    <nav class="sidebar">
+        <header>
+            <div class="image-text">
+                
+                <span class="image">
+                    <input type="file" id="file-input" accept="image/*" style="display: none;">
+                    <label for="file-input"><img src="/image/{{userImage}}" alt="Profile Image" id="profile-image"> </label>
+                </span>
+                <div class="text header-tex">
+                    <span class="name">
+                        <span class="statut" id="user-name">User </span>
+                    </span>
+                </div>
+            </div>
+            
+        </header>
+
+        <div class="menu-bar">
+            <div class="menu">
+                <ul class="menu-links">
+                    <li class="nav-link">
+                        <a href="/dashboard_user.html">
+                            <i class='bx bx-home-heart icon'></i>
+                            <span class="text nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="/mission_benevole.html">
+                            <i class='bx bx-heart icon'></i>
+                            <span class="text nav-text">Mission Bénévole</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="/detail_recompense.html">
+                            <i class='bx bx-trophy icon'></i>
+                            <span class="text nav-text">Récompense</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="/historique_recompenses.html">
+                            <i class='bx bx-history icon'></i>
+                            <span class="text nav-text">Historique récompense</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="/calendrier_user.html">
+                            <i class='bx bx-calendar icon'></i>
+                            <span class="text nav-text">Calendrier</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bottom-content">
+                <li class>
+                    <a href="/login2.html">
+                        <i class='bx bx-log-out icon'></i>
+                        <span class="text nav-text">Logout</span>
+                    </a>
+                </li>
+
+                <li class="mode">
+                    <div class="moon-sun">
+                        <i class='bx bx-moon icon moon'></i>
+                        <i class='bx bx-sun icon sun'></i>
+                    </div>
+                    <span class="mode-text text">Dark_Mode</span>
+
+                    <div class="toggle-switch">
+                        <span class="switch"></span>
+                    </div>
+                </li>
+            </div>
+        </div>
+    </nav>
+
+    <div class="home">
+        <div id="confirmation-popup" class="popup" style="display: none;">
+            <h2>Confirmation</h2>
+            <p id="confirmation-message"></p>
+            <button id="close-confirmation-button">Fermer</button>
+        </div>
+        <div class="text1">
+            <a href="/mission_benevole.html" class="back">
+                <i class='bx bx-left-arrow-circle'></i>
+            </a>
+            <span>Retour</span>
+        </div>
+
+        <div class="text">Liste des Missions</div>
+        <table id="missions-table">
+            <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Description</th>
+                    <th>Heures</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Les lignes seront ajoutées ici par JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.getElementById('file-input').addEventListener('change', function() {
+            const formData = new FormData();
+            const fileInput = document.getElementById('file-input');
+            
+            if (fileInput.files.length > 0) {
+                formData.append('image', fileInput.files[0]);
+    
+                fetch('/updateProfileImage', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload(); // Recharger la page pour afficher la nouvelle image
+                    } else {
+                        alert('Erreur lors de la mise à jour de l\'image.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                });
+            }
+        });
+    </script>
+
+    <script>
+        fetch('/api/getUserName') 
+    .then(response => response.json())
+    .then(data => {
+        if (data.name) {
+            document.getElementById('user-name').textContent = data.name; // Update the displayed name
+        }
+    })
+    .catch(error => console.error('Error fetching admin name:', error));
+    </script>
+
+    <script>
+        function deleteMission(missionId) {
+            console.log('ID de la mission à supprimer:', missionId);
+            if (confirm('Voulez-vous vraiment effectuer cette suppression ?')) {
+                fetch(`/mission_benevole/${missionId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la suppression de la mission');
+                    }
+                    fetchMissions(); // Rafraîchir la liste des missions après la suppression
+                })
+                .catch(error => {
+                    console.error('Erreur réseau:', error);
+                });
+            }
+        }
+
+        function validateMission(benevoleName, missionTitle, hours) {
+            const message = `Le bénévole ${benevoleName} a effectué la mission ${missionTitle} pendant ${hours} heures.`;
+            
+            localStorage.setItem('dashboardMessage', message);
+            localStorage.setItem('benevoleName', benevoleName); 
+
+            const confirmationMessage = `La mission que vous avez terminé a bien été envoyée aux dirigeants de ActionBénévole. Vous serez récompensé !`;
+            document.getElementById('confirmation-message').textContent = confirmationMessage; // Mettre le message dans le pop-up
+            document.getElementById('confirmation-popup').style.display = 'flex'; // Afficher le pop-up de confirmation
+        }
+
+        document.getElementById('close-confirmation-button').addEventListener('click', function() {
+            document.getElementById('confirmation-popup').style.display = 'none'; // Cacher le pop-up de confirmation
+        });
+
+        function fetchMissions() {
+            fetch('/liste_missions')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération des missions');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+                const tableBody = document.getElementById('missions-table').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = '';
+
+                data.forEach(mission => {
+                    const row = tableBody.insertRow();
+                    row.insertCell(0).textContent = mission.mission_title;
+                    row.insertCell(1).textContent = mission.mission_description;
+                    row.insertCell(2).textContent = mission.heure;
+
+                    // Créer le bouton de suppression
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Supprimer';
+                    deleteButton.className = 'delete-button';
+                    deleteButton.onclick = function() {
+                        console.log('ID de la mission à supprimer:', mission.id);
+                        deleteMission(mission.id);
+                    };
+
+                    const validateButton = document.createElement('button');
+                    validateButton.textContent = 'Terminer';
+                    validateButton.className = 'validate-button';
+                    validateButton.onclick = function() {
+                    const missionTitle = mission.mission_title; // Récupérer le titre de la mission
+                    validateMission(mission.benevole_name, missionTitle, mission.heure);
+};
+
+
+                    const actionCell = row.insertCell(3);
+                    actionCell.appendChild(deleteButton);
+                    actionCell.appendChild(validateButton);
+                });
+            })
+            .catch(error => console.error('Erreur lors de la récupération des missions:', error));
+        }
+
+        // Appeler la fonction pour récupérer les missions lorsque la page est chargée
+        document.addEventListener('DOMContentLoaded', fetchMissions);
+    </script>
+    <script src="/js/script.js"></script>
+</body>
+</html>
+           

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/css/sidebar.css">
+        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css'
+            rel='stylesheet'>
+        <link rel="stylesheet" href="/css/style.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <link rel="icon" href="/image/together.jpeg" type="image/x-icon"> 
+    </head>
+    <body>
+        <nav class="sidebar">
+            <header>
+                <div class="image-text">
+                    
+                    <span class="image">
+                        <input type="file" id="file-input" accept="image/*" style="display: none;">
+                        <label for="file-input">
+                            <img id="profile-image" src="/image/{{userImage}}" alt="Profile Image">
+                        </label>
+                    </span>
+
+
+                    <div class="text header-tex">
+                        <span class="name">
+                            <span class="statut" id="user-name">Admin </span>
+                        </span>
+                    </div>
+                </div>
+                
+            </header>
+
+            <div class="menu-bar">
+                <div class="menu">
+                    <ul class="menu-links">
+                        <li class="nav-link">
+                            <a href="/dashboard.html">
+                                <i class='bx bx-home-heart icon'></i>
+                                <span class="text nav-text">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/mission.html">
+                                <i class='bx bx-task icon'></i>
+                                <span class="text nav-text">Mission</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/send_recompense.html">
+                                <i class='bx bx-trophy icon'></i>
+                                <span class="text nav-text">Récompense</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/liste_recompense.html">
+                                <i class='bx bx-history icon'></i>
+                                <span class="text nav-text">Historique récompense</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/calendrier.html">
+                                <i class='bx bx-calendar icon'></i>
+                                <span class="text nav-text">Calendrier</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bottom-content">
+                    <li class>
+                        <a href="/login1.html">
+                            <i class='bx bx-log-out icon'></i>
+                            <span class="text nav-text">Logout</span>
+                        </a>
+                    </li>
+
+                    <li class="mode">
+                        <div class="moon-sun">
+                            <i class='bx bx-moon icon moon'></i>
+                            <i class='bx bx-sun icon sun'></i>
+                        </div>
+                        <span class="mode-text text">Dark_Mode</span>
+
+                        <div class="toggle-switch">
+                            <span class="switch"></span>
+                        </div>
+                    </li>
+                </div>
+            </div>
+        </nav>
+        <div class="home">
+            <div class="text">Récompenses de bénévolat</div>
+
+            <form id="mission-form" action="/send_recompense" method="post">
+                <label for="mission_id">Sélectionnez une mission :</label>
+                <select name="mission_id" id="mission_id">
+                    <option value="" selected>Selectionner une mission</option>
+                    {{missionRecompense}}
+                </select>
+            
+                <label for="recompense">Récompense :</label>
+                <select name="recompense" id="recompense">
+                    <option value="" selected>Selectionner une récompense</option>
+                    <option value="Bronze">Bronze</option>
+                    <option value="Argent">Argent</option>
+                    <option value="Or">Or</option>
+                    {{missionRecompense}}
+                </select>
+            
+                <label for="benevole_id">Bénévole :</label>
+                <select name="benevole_id" id="benevole_id">
+                    <option value="" selected>Selectionner un bénévole</option>
+                    {{benevoleRecompense}}
+                </select>
+            
+                <button type="submit">Récompenser un Bénévole</button>
+            </form>
+            <div id="message">
+                <script>
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const successMessage = urlParams.get('message');
+            
+                    
+                    const storedMessage = localStorage.getItem('successMessage');
+            
+                    if (successMessage) {
+                        localStorage.setItem('successMessage', successMessage); // Stocker le message dans le localStorage
+                    }
+            
+                    // Utiliser le message stocké si disponible
+                    const messageToShow = storedMessage || successMessage;
+            
+                    if (messageToShow) {
+                        const messageElement = document.createElement('p');
+                        messageElement.textContent = messageToShow;
+            
+                        const closeButton = document.createElement('span');
+                        closeButton.textContent = '✖';
+                        closeButton.style.cursor = 'pointer';
+                        closeButton.style.marginLeft = '10px';
+                        closeButton.style.color = 'red';
+            
+                        closeButton.onclick = function() {
+                            document.getElementById('message').style.display = 'none';
+                            localStorage.removeItem('successMessage'); // Supprimer le message du localStorage
+                        };
+            
+                        messageElement.appendChild(closeButton);
+                        document.getElementById('message').appendChild(messageElement);
+                    }
+                </script>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('file-input').addEventListener('change', function() {
+                const formData = new FormData();
+                const fileInput = document.getElementById('file-input');
+                
+                if (fileInput.files.length > 0) {
+                    formData.append('image', fileInput.files[0]);
+        
+                    fetch('/updateAdminProfileImage', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.reload(); 
+                        } else {
+                            alert('Erreur lors de la mise à jour de l\'image.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+                }
+            });
+        </script>
+
+
+        <script>
+            fetch('/api/getAdminName') 
+        .then(response => response.json())
+        .then(data => {
+            if (data.name) {
+                document.getElementById('user-name').textContent = data.name; // Update the displayed name
+            }
+        })
+        .catch(error => console.error('Error fetching admin name:', error));
+        </script>
+        <script>
+            document.getElementById('mission-form').addEventListener('submit', function(event) {
+                // Rafraîchir la page immédiatement après la soumission
+                location.reload();
+            });
+        </script>
+
+        <script src="/js/script.js"></script>
+    </body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/css/index copy.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="icon" href="/image/together.jpeg" type="image/x-icon"> 
+</head>
+<body class="body_béné">
+    
+    <nav>
+        <img src="/image/together.jpeg" alt="logo" class="logo">
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/login1.html">Login</a></li>
+            <li><a href="/register1.html">Register</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+
+        <form action="/register1" method="post" enctype="multipart/form-data"> <!-- Ajout de enctype -->
+
+            <div class="form">
+                <h2>Inscription</h2>
+                <div class="inputBox">
+                    <input type="text" name="name" placeholder="Nom d'Utilisateur" required>
+                </div>
+                <div class="inputBox">
+                    <input type="email" name="mail" placeholder="Mail" required>
+                </div>
+                <div class="inputBox">
+                    <input type="password" name="password" placeholder="Mot de passe" required>
+                </div>
+                <div class="inputBox">
+                    <input type="file" name="image" accept="image/*" required id="file-input"> <!-- Champ pour l'image -->
+                    <div id="image-message" style="color: green; display: none;">Image acceptée !</div> <!-- Message de confirmation -->
+                </div>
+                <div class="inputBox">
+                    <input type="submit" class="submit-button" value="S'inscrire">
+                </div>
+                <div class="lien">Déjà enregistré ?<a href="/login1.html"> Connectez-vous</a></div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('file-input').addEventListener('change', function() {
+            const messageDiv = document.getElementById('image-message');
+            if (this.files && this.files.length > 0) {
+                messageDiv.style.display = 'block'; 
+                messageDiv.textContent = 'Image acceptée !'; 
+            } else {
+                messageDiv.style.display = 'none'; 
+            }
+        });
+    </script>
+
+</body>
+</html>

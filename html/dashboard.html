@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/css/sidebar.css">
+        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css'
+            rel='stylesheet'>
+            <link rel="icon" href="/image/together.jpeg" type="image/x-icon"> 
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Tableau de Bord</title>
+    </head>
+    <body>
+        <nav class="sidebar">
+            <header>
+                <div class="image-text">
+                    
+                    <span class="image">
+                        <input type="file" id="file-input" accept="image/*" style="display: none;">
+                        <label for="file-input">
+                            <img id="profile-image" src="/image/{{userImage}}" alt="Profile Image">
+                        </label>
+                    </span>
+                    <div class="text header-tex">
+                        <span class="name">
+                            <span class="statut" id="user-name">Admin </span>
+                        </span>
+                    </div>
+                </div>
+                
+            </header>
+
+            <div class="menu-bar">
+                <div class="menu">
+                    <ul class="menu-links">
+                        <li class="nav-link">
+                            <a href="/dashboard.html">
+                                <i class='bx bx-home-heart icon'></i>
+                                <span class="text nav-text">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/mission.html">
+                                <i class='bx bx-task icon'></i>
+                                <span class="text nav-text">Mission</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/send_recompense.html">
+                                <i class='bx bx-trophy icon'></i>
+                                <span class="text nav-text">Récompense</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/liste_recompense.html">
+                                <i class='bx bx-history icon'></i>
+                                <span class="text nav-text">Historique récompense</span>
+                            </a>
+                        </li>
+                        <li class="nav-link">
+                            <a href="/calendrier.html">
+                                <i class='bx bx-calendar icon'></i>
+                                <span class="text nav-text">Calendrier</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bottom-content">
+                    <li class>
+                        <a href="/login1.html">
+                            <i class='bx bx-log-out icon'></i>
+                            <span class="text nav-text">Logout</span>
+                        </a>
+                    </li>
+
+                    <li class="mode">
+                        <div class="moon-sun">
+                            <i class='bx bx-moon icon moon'></i>
+                            <i class='bx bx-sun icon sun'></i>
+                        </div>
+                        <span class="mode-text text">Dark_Mode</span>
+
+                        <div class="toggle-switch">
+                            <span class="switch"></span>
+                        </div>
+                    </li>
+                </div>
+            </div>
+        </nav>
+
+        <div class="home">
+            <div id="popup" class="popup" style="display: none;">
+                <h2>Message</h2>
+                <p id="popup-message"></p>
+                <button id="close-button">Fermer</button> <!-- Changement ici -->
+            </div>
+
+            <div class="text">Dashboard</div>
+            <div class="dashboard-container">
+                <div id="mission-count" class="statistic-card">
+                    <p class="statistic-text">Nombre total de missions : <span
+                            id="total-missions">0</span></p>
+                </div>
+            </div>
+            <div class="dashboard-container">
+                <div id="benevole-count" class="statistic-card">
+                    <p class="statistic-text">Nombre total de bénévoles : 
+                        <span id="total-benevole">0</span></p>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('file-input').addEventListener('change', function() {
+                const formData = new FormData();
+                const fileInput = document.getElementById('file-input');
+                
+                if (fileInput.files.length > 0) {
+                    formData.append('image', fileInput.files[0]);
+        
+                    fetch('/updateAdminProfileImage', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.reload(); 
+                        } else {
+                            alert('Erreur lors de la mise à jour de l\'image.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+                }
+            });
+        </script>
+
+        <script>
+            fetch('/api/getAdminName') 
+        .then(response => response.json())
+        .then(data => {
+            if (data.name) {
+                document.getElementById('user-name').textContent = data.name; // Update the displayed name
+            }
+        })
+        .catch(error => console.error('Error fetching admin name:', error));
+        </script>
+
+        <script>
+        fetch('/dashboard/missions/count')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération du nombre de missions');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('total-missions').textContent = data.total;
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la récupération du nombre de missions.');
+            });
+
+            fetch('/dashboard/benevoles/count')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la récupération du nombre de bénévoles');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('total-benevole').textContent = data.total; // Mettre à jour le compteur
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Erreur lors de la récupération du nombre de bénévoles.');
+                });
+    </script>
+       <script>
+        window.onload = function() {
+            const message = localStorage.getItem('dashboardMessage'); // Récupérer le message du local storage
+            const benevoleName = localStorage.getItem('benevoleName'); // Récupérer le nom du bénévole
+            
+            if (message) {
+                document.getElementById('popup-message').textContent = message; // Mettre le message dans le pop-up
+                document.getElementById('popup').style.display = 'flex'; // Afficher le pop-up
+                localStorage.removeItem('dashboardMessage'); // Supprimer le message du local storage après l'avoir utilisé
+            }
+
+            // Événement pour le bouton de fermeture
+            document.getElementById('close-button').addEventListener('click', function() {
+                document.getElementById('popup').style.display = 'none'; // Cacher le pop-up
+            });
+        }
+    </script>
+        <script src="/js/script.js"></script>
+    </body>
+</html>
